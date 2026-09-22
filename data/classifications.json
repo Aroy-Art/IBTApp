@@ -1,0 +1,40 @@
+[
+  {
+    "recipient": ["IKEA", "Mio", "Jysk", "Loans", "Rent", "Insurance"],
+    "classification": "Household"
+  },
+  {
+    "recipient": [
+      "SL",
+      "SJ",
+      "Västtrafik",
+      "Skånetrafiken",
+      "UL",
+      "Östgötatrafiken",
+      "Hallandstrafiken",
+      "Länstrafiken Örebro",
+      "Dalatrafik",
+      "X-trafik",
+      "Länstrafiken Västerbotten",
+      "Länstrafiken Norrbotten",
+      "Tabussen"
+    ],
+    "classification": "Transport"
+  },
+  {
+    "recipient": ["ICA", "Coop", "Willys", "Lidl", "Hemköp", "Handlarn"],
+    "classification": "Food"
+  },
+  {
+    "recipient": [
+      "Netflix",
+      "Disney Plus",
+      "Prime",
+      "Apple Tv",
+      "Spotify",
+      "Apple Music",
+      "Tidal"
+    ],
+    "classification": "Entertainment"
+  }
+]
