@@ -1,0 +1,20 @@
+{
+  "name": "ibt-app",
+  "private": true,
+  "workspaces": [
+    "src/server",
+    "src/client"
+  ],
+  "scripts": {
+    "server": "npm run dev --workspace=src/server",
+    "client": "npm run start --workspace=src/client"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0"
+  },
+  "allowScripts": {
+    "esbuild": true
+  }
+}
