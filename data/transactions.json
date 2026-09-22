@@ -1,0 +1,39 @@
+[
+  {
+    "id": 1,
+    "date": "2026-09-01",
+    "recipient": "ICA",
+    "amount": -350
+  },
+  {
+    "id": 2,
+    "date": "2026-09-02",
+    "recipient": "SL",
+    "amount": -120
+  },
+  {
+    "id": 3,
+    "date": "2026-09-04",
+    "recipient": "Employer",
+    "amount": 30000
+  },
+   {
+    "id": 4,
+    "date": "2026-09-06",
+    "recipient": "Lidl",
+    "amount": -450
+  },
+   {
+    "id": 5,
+    "date": "2026-09-10",
+    "recipient": "Max",
+    "amount": -200
+  },
+   {
+    "id": 6,
+    "date": "2026-09-11",
+    "recipient": "Cinema",
+    "amount": -179
+  }
+  
+]
