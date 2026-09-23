@@ -8,7 +8,7 @@ import {
   loadTransactions,
   saveTransactions,
 } from "./data";
-import { isUUID } from "./utils";
+import { isUUID, isDateString } from "./utils";
 
 const app = express();
 const PORT = 3000;
@@ -25,8 +25,31 @@ app.use((req: Request, res: Response, next) => {
 });
 
 // Get transactions
-app.get("/transactions", (_req: Request, res: Response) => {
-  const transactions: Transaction[] = loadTransactions();
+app.get("/transactions", (req: Request, res: Response) => {
+  let transactions: Transaction[] = loadTransactions();
+
+  const { from, to } = req.query;
+
+  if (from || to) {
+    if (from && !isDateString(from as string)) {
+      res.status(400).json({ error: "Invalid 'from' date. Use YYYY-MM-DD" });
+      return;
+    }
+    if (to && !isDateString(to as string)) {
+      res.status(400).json({ error: "Invalid 'to' date. Use YYYY-MM-DD" });
+      return;
+    }
+    if (from && to && (from as string) > (to as string)) {
+      res.status(400).json({ error: "'from' date must be before 'to' date" });
+      return;
+    }
+    transactions = transactions.filter((t) => {
+      if (from && t.date < (from as string)) return false;
+      if (to && t.date > (to as string)) return false;
+      return true;
+    });
+  }
+
   res.json(transactions);
 });
 
