@@ -10,11 +10,30 @@
     "client": "npm run start --workspace=src/client"
   },
   "devDependencies": {
+    "@types/express": "^5.0.6",
     "@types/node": "^26.6.2",
     "tsx": "^4.23.15",
     "typescript": "^7.0.2"
   },
   "allowScripts": {
     "esbuild": true
-  }
+  },
+  "dependencies": {
+    "express": "^5.2.1"
+  },
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Aroy-Art/IBTApp.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Aroy-Art/IBTApp/issues"
+  },
+  "homepage": "https://github.com/Aroy-Art/IBTApp#readme"
 }
