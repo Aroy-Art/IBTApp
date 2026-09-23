@@ -36,8 +36,7 @@ app.get("/classifications", (_req: Request, res: Response) => {
   res.json(classifications);
 });
 
-//get transaction by id
-
+// Get transaction by id
 app.get("/transactions/:id", (req: Request, res: Response) => {
   const id = String(req.params.id);
   if (!isUUID(id)) {
