@@ -1,39 +1,38 @@
 [
   {
-    "id": 1,
+    "id": "dda11c22-b8c4-40fd-85ea-9d03a0905804",
     "date": "2026-09-01",
     "recipient": "ICA",
     "amount": -350
   },
   {
-    "id": 2,
+    "id": "f6c4a73e-f4ad-487c-887b-7a3009dc8f1f",
     "date": "2026-09-02",
     "recipient": "SL",
     "amount": -120
   },
   {
-    "id": 3,
+    "id": "7e0bbaf9-2a86-488c-93e5-62642814ff1c",
     "date": "2026-09-04",
     "recipient": "Employer",
     "amount": 30000
   },
-   {
-    "id": 4,
+  {
+    "id": "82f66e84-d211-48f9-acb3-84b541f40f61",
     "date": "2026-09-06",
     "recipient": "Lidl",
     "amount": -450
   },
-   {
-    "id": 5,
+  {
+    "id": "94d9e1c7-69db-4d0c-98f2-c3657b689fb4",
     "date": "2026-09-10",
     "recipient": "Max",
     "amount": -200
   },
-   {
-    "id": 6,
+  {
+    "id": "8699c896-930c-4233-b3fc-a6364966efb8",
     "date": "2026-09-11",
     "recipient": "Cinema",
     "amount": -179
   }
-  
 ]
