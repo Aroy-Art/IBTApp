@@ -32,7 +32,7 @@ export function loadTransactions(): Transaction[] {
 	return JSON.parse(raw);
 }
 
-export function saveTransaction(transactions: Transaction[]): void {
+export function saveTransactions(transactions: Transaction[]): void {
 	fs.writeFileSync(
 		path.join(DATA_DIR, "transactions.json"),
 		JSON.stringify(transactions, null, 2),
