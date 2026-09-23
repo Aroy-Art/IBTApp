@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
 import express from "express";
 
-import type { Transaction } from "./data";
+import type { Classification, ClassificationRule, Transaction } from "./data";
 import {
   classify,
   loadClassificationRules,
@@ -29,6 +29,12 @@ app.get("/transactions", (_req: Request, res: Response) => {
   res.json(transactions);
 });
 
+// Get classifications
+app.get("/classifications", (_req: Request, res: Response) => {
+  const classifications: ClassificationRule[] = loadClassificationRules();
+  res.json(classifications);
+});
+
 //get transaction by id
 
 app.get("/transactions/:id", (req: Request, res: Response) => {
@@ -43,8 +49,6 @@ app.get("/transactions/:id", (req: Request, res: Response) => {
 
   res.json(transaction);
 });
-
-
 
 // Catch all other paths and return 404
 app.use((_req: Request, res: Response) => {
