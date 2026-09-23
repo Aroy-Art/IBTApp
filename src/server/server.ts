@@ -50,6 +50,20 @@ app.get("/transactions/:id", (req: Request, res: Response) => {
   res.json(transaction);
 });
 
+// Delete transaction
+
+app.delete("/transactions/:id", (req: Request, res: Response) => {
+  const id = Number(req.params.id);
+  let transactions = loadTransactions();
+  const seclectedTransaction = transactions.find((t) => t.id === id);
+  transactions = transactions.filter((t) => t.id !== id);
+  saveTransactions(transactions);
+  res.json({
+    message: "Transaction deleted successfully.",
+    transaction: seclectedTransaction,
+  });
+});
+
 // Catch all other paths and return 404
 app.use((_req: Request, res: Response) => {
   res.status(404).json({ error: "Not Found" });
