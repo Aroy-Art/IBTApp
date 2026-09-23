@@ -16,6 +16,7 @@ const PORT = 3000;
 
 app.use(express.json());
 
+
 // log the requests to terminal
 app.use((req: Request, res: Response, next) => {
 	res.on("finish", () => {
@@ -25,7 +26,22 @@ app.use((req: Request, res: Response, next) => {
 	next();
 });
 
-// Routes Here ↓↓↓ (eg GET, PUT, POST...)
+//get transaction by id
+
+app.get('/transactions/:id', (req, res) => {
+  const id = Number(req.params.id);
+  const transaction = loadTransactions();
+  const transaction = transactions.find((t) => t.id === id);
+
+  if (!transaction) {
+    res.status(404).json({ message: "Transaction not found" });
+    return;
+  }
+
+  res.json(transaction);
+});
+
+
 
 // Catch all other paths and return 404
 app.use((_req: Request, res: Response) => {
@@ -35,3 +51,5 @@ app.use((_req: Request, res: Response) => {
 app.listen(PORT, () => {
 	console.log(`Server is running on ${PORT}`);
 });
+
+
