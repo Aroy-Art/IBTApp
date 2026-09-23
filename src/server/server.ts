@@ -8,6 +8,7 @@ import {
   loadTransactions,
   saveTransactions,
 } from "./data";
+import { isUUID } from "./utils";
 
 const app = express();
 const PORT = 3000;
@@ -38,7 +39,12 @@ app.get("/classifications", (_req: Request, res: Response) => {
 //get transaction by id
 
 app.get("/transactions/:id", (req: Request, res: Response) => {
-  const id = Number(req.params.id);
+  const id = String(req.params.id);
+  if (!isUUID(id)) {
+    res.status(400).json({ message: "Invalid id" });
+    return;
+  }
+
   const transactions = loadTransactions();
   const transaction = transactions.find((t) => t.id === id);
 
@@ -66,7 +72,7 @@ app.post("/transactions", (req: Request, res: Response) => {
   const transactions = loadTransactions();
 
   const newTransaction = {
-    id: transactions.length + 1,
+    id: crypto.randomUUID(),
     date: req.body.date,
     recipient: req.body.recipient,
     amount: req.body.amount,
@@ -82,10 +88,20 @@ app.post("/transactions", (req: Request, res: Response) => {
 
 // Delete transaction
 app.delete("/transactions/:id", (req: Request, res: Response) => {
-  const id = Number(req.params.id);
+  const id = String(req.params.id);
+  if (!isUUID(id)) {
+    res.status(400).json({ message: "Invalid id" });
+    return;
+  }
+
   let transactions = loadTransactions();
   const seclectedTransaction = transactions.find((t) => t.id === id);
+  if (!seclectedTransaction) {
+    res.status(404).json({ message: "Transaction not found" });
+    return;
+  }
   transactions = transactions.filter((t) => t.id !== id);
+
   saveTransactions(transactions);
   res.json({
     message: "Transaction deleted successfully.",
