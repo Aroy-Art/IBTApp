@@ -1,5 +1,10 @@
 {
   "$schema": "https://biomejs.dev/schemas/2.5.14/schema.json",
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "space",
+    "indentWidth": 2
+  },
   "assist": {
     "actions": {
       "source": {
@@ -7,19 +12,11 @@
           "level": "on",
           "options": {
             "groups": [
-              [
-                ":BUN:",
-                ":NODE:"
-              ],
+              [":BUN:", ":NODE:"],
               ":BLANK_LINE:",
-              [
-                ":PACKAGE:"
-              ],
+              [":PACKAGE:"],
               ":BLANK_LINE:",
-              [
-                ":ALIAS:",
-                ":PATH:"
-              ]
+              [":ALIAS:", ":PATH:"]
             ]
           }
         }
