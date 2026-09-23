@@ -50,7 +50,39 @@ app.get("/transactions/:id", (req: Request, res: Response) => {
   res.json(transaction);
 });
 
+<<<<<<< HEAD
 // Delete transaction
+=======
+//post transaction
+
+app.post("/transactions", (req: Request, res: Response) => {
+
+	if (
+		!req.body.date || 
+		!req.body.recipient ||
+		!req.body.amount ||
+		typeof req.body.date !== "string" ||
+        typeof req.body.recipient !== "string" ||
+        typeof req.body.amount !== "number") {
+		return res.status(400).json({ message:"All fields are required"});
+	} 
+
+	const transactions = loadTransactions();
+
+	const newTransaction = {
+		id: transactions.length + 1,
+		date: req.body.date,
+		recipient: req.body.recipient,
+		amount: req.body.amount
+    };
+
+	transactions.push(newTransaction);
+	saveTransactions(transactions);
+    res.status(201).json({message: "New transaction added successfully", transaction:newTransaction})
+
+});
+
+>>>>>>> feature/post-transaction
 
 app.delete("/transactions/:id", (req: Request, res: Response) => {
   const id = Number(req.params.id);
