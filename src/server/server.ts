@@ -28,7 +28,7 @@ app.use((req: Request, res: Response, next) => {
 
 //get transaction by id
 
-app.get('/transactions/:id', (req, res) => {
+app.get('/transactions/:id', (req: Request, res:Response) => {
   const id = Number(req.params.id);
   const transaction = loadTransactions();
   const transaction = transactions.find((t) => t.id === id);
