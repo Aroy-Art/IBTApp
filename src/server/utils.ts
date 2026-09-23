@@ -7,3 +7,17 @@ export function isUUID(uuid: string): boolean {
     uuid,
   );
 }
+
+export function toNumber(value: unknown): number | undefined {
+  if (value === null || value === undefined || value === "") {
+    return undefined;
+  }
+
+  const number = Number(value);
+
+  return Number.isFinite(number) ? number : undefined;
+}
+
+export function isNumber(value: unknown): value is number {
+  return typeof value === "number" && Number.isFinite(value);
+}
