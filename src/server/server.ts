@@ -50,7 +50,12 @@ app.get("/transactions", (req: Request, res: Response) => {
     });
   }
 
-  res.json(transactions);
+  const classified: Transaction[] = transactions.map((t) => ({
+    ...t,
+    classification: classify(t.recipient),
+  }));
+
+  res.json(classified);
 });
 
 // Get classifications
@@ -75,7 +80,12 @@ app.get("/transactions/:id", (req: Request, res: Response) => {
     return;
   }
 
-  res.json(transaction);
+  const classified: Transaction = {
+    ...transaction,
+    classification: classify(transaction?.recipient),
+  };
+
+  res.json(classified);
 });
 
 // Put transaction by id
@@ -129,11 +139,11 @@ app.put("/transactions/:id", (req: Request, res: Response) => {
 
 // Post transaction
 app.post("/transactions", (req: Request, res: Response) => {
-	let { date, recipient, amount } = req.body;
-	
+  let { date, recipient, amount } = req.body;
+
   if (!date || !isDateString(date)) {
-    res.status(400).json({ error: "Invalid 'date'. Use YYYY-MM-DD"});
-	return;
+    res.status(400).json({ error: "Invalid 'date'. Use YYYY-MM-DD" });
+    return;
   }
   if (typeof recipient !== "string") {
     return res.status(400).json({ error: "Recipient is required" });
@@ -150,14 +160,19 @@ app.post("/transactions", (req: Request, res: Response) => {
     id: crypto.randomUUID(),
     date,
     recipient,
-    amount
+    amount,
   };
 
   transactions.push(newTransaction);
   saveTransactions(transactions);
+  const transaction = newTransaction;
+  const result = {
+    ...transaction,
+    classification: classify(transaction.recipient),
+  };
   res.status(201).json({
     error: "New transaction added successfully",
-    transaction: newTransaction,
+    transaction: result,
   });
 });
 
@@ -178,9 +193,13 @@ app.delete("/transactions/:id", (req: Request, res: Response) => {
   transactions = transactions.filter((t) => t.id !== id);
 
   saveTransactions(transactions);
+  const result = {
+    ...seclectedTransaction,
+    classification: classify(seclectedTransaction.recipient),
+  };
   res.json({
     message: "Transaction deleted successfully.",
-    transaction: seclectedTransaction,
+    transaction: result,
   });
 });
 
