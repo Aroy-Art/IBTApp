@@ -8,7 +8,7 @@ import {
   loadTransactions,
   saveTransactions,
 } from "./data";
-import { isUUID, isDateString } from "./utils";
+import { isDateString, isUUID } from "./utils";
 
 const app = express();
 const PORT = 3000;
@@ -63,7 +63,7 @@ app.get("/classifications", (_req: Request, res: Response) => {
 app.get("/transactions/:id", (req: Request, res: Response) => {
   const id = String(req.params.id);
   if (!isUUID(id)) {
-    res.status(400).json({ message: "Invalid id" });
+    res.status(400).json({ error: "Invalid id" });
     return;
   }
 
@@ -71,7 +71,7 @@ app.get("/transactions/:id", (req: Request, res: Response) => {
   const transaction = transactions.find((t) => t.id === id);
 
   if (!transaction) {
-    res.status(404).json({ message: "Transaction not found" });
+    res.status(404).json({ error: "Transaction not found" });
     return;
   }
 
@@ -112,14 +112,14 @@ app.post("/transactions", (req: Request, res: Response) => {
 app.delete("/transactions/:id", (req: Request, res: Response) => {
   const id = String(req.params.id);
   if (!isUUID(id)) {
-    res.status(400).json({ message: "Invalid id" });
+    res.status(400).json({ error: "Invalid id" });
     return;
   }
 
   let transactions = loadTransactions();
   const seclectedTransaction = transactions.find((t) => t.id === id);
   if (!seclectedTransaction) {
-    res.status(404).json({ message: "Transaction not found" });
+    res.status(404).json({ error: "Transaction not found" });
     return;
   }
   transactions = transactions.filter((t) => t.id !== id);
