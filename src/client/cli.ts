@@ -28,8 +28,8 @@ async function viewAll() {
 
 async function viewOne() {
   const id = await selectTransaction();
-  const t = await apiFetch(`/transactions/${id}`);
-  console.table([t]);
+  const transaction = await apiFetch(`/transactions/${id}`);
+  console.table(transaction);
 }
 
 // Main cli loop
