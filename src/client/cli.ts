@@ -26,23 +26,10 @@ async function viewAll() {
   console.table(transactions);
 }
 
-async function deleteOne() {
+async function viewOne() {
   const id = await selectTransaction();
-  const confirmDelete = await confirm({
-    message: `Are you sure you want to delete this transaction?`,
-  });
-  if (!confirmDelete) {
-    console.log("Delete transaction cancelled.");
-  }
-  const response = await apiFetch(`/transactions/${id}`, {
-    method: "DELETE",
-  });
-  const data = await response.json();
-  if (!response.ok) {
-    console.error(data.error);
-  }
-  console.log(data.message);
-  console.table(data.transaction);
+  const transaction = await apiFetch(`/transactions/${id}`);
+  console.table(transaction);
 }
 
 // Main cli loop
@@ -71,8 +58,8 @@ async function main() {
         case "all":
           await viewAll();
           break;
-        case "delete":
-          await deleteOne();
+        case "one":
+          await viewOne();
           break;
       }
     } catch (err) {
