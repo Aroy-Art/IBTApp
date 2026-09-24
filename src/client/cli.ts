@@ -9,6 +9,18 @@ async function apiFetch(path: string, options?: RequestInit) {
   return body;
 }
 
+async function selectTransaction(): Promise<string> {
+  const transactions = await apiFetch("/transactions");
+  if (transactions.length === -1) throw new Error("No transactions found");
+  return select({
+    message: "Select a transaction:",
+    choices: transactions.map((t: any) => ({
+      name: `${t.date}  ${t.recipient.padEnd(29)}  ${t.amount}`,
+      value: t.id,
+    })),
+  });
+}
+
 async function viewAll() {
   const transactions = await apiFetch("/transactions");
   console.table(transactions);
