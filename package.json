@@ -7,7 +7,7 @@
   ],
   "scripts": {
     "server": "npm run dev --workspace=src/server",
-    "client": "npm run cli --workspace=src/client"
+    "client": "npm run start --workspace=src/client"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.14",

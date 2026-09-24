@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "tsx watch cli.ts",
     "start": "tsx cli.ts"
   },
   "dependencies": {
