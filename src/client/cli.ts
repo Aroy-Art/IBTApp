@@ -1,4 +1,4 @@
-import { confirm, input, select } from "@inquirer/prompts";
+import { confirm, confirm, input, select } from "@inquirer/prompts";
 
 const BASE_URL = "http://localhost:3000";
 
@@ -26,6 +26,25 @@ async function viewAll() {
   console.table(transactions);
 }
 
+async function deleteOne() {
+  const id = await selectTransaction();
+  const confirmDelete = await confirm({
+    message: `Are you sure you want to delete this transaction?`,
+  });
+  if (!confirmDelete) {
+    console.log("Delete transaction cancelled.");
+  }
+  const response = await fetch(`http://localhost:3000/transactions/${id}`, {
+    method: "DELETE",
+  });
+  const data = await response.json();
+  if (!response.ok) {
+    console.error(data.error);
+  }
+  console.log(data.message);
+  console.table(data.transaction);
+}
+
 // Main cli loop
 async function main() {
   console.log("======= Internet Back =======\n");
@@ -51,6 +70,9 @@ async function main() {
       switch (action) {
         case "all":
           await viewAll();
+          break;
+        case "delete":
+          await deleteOne();
           break;
       }
     } catch (err) {
