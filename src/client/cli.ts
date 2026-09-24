@@ -1,4 +1,4 @@
-import { confirm, confirm, input, select } from "@inquirer/prompts";
+import { confirm, input, select } from "@inquirer/prompts";
 
 const BASE_URL = "http://localhost:3000";
 
