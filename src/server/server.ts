@@ -78,6 +78,55 @@ app.get("/transactions/:id", (req: Request, res: Response) => {
   res.json(transaction);
 });
 
+// Put transaction by id
+app.put("/transactions/:id", (req: Request, res: Response) => {
+  const id = String(req.params.id);
+  if (!isUUID(id)) {
+    res.status(400).json({ error: "Invalid id" });
+    return;
+  }
+
+  const transactions = loadTransactions();
+  const index = transactions.findIndex((t) => t.id === id);
+
+  if (index === -1) {
+    res.status(404).json({ error: `Transaction ${id} not found` });
+    return;
+  }
+
+  let { date, recipient, amount } = req.body;
+
+  if (date && !isDateString(date as string)) {
+    res.status(400).json({ error: "Invalid 'date' date. Use YYYY-MM-DD" });
+    return;
+  }
+  if (amount !== undefined && typeof amount !== "number") {
+    res.status(400).json({ error: "Invalid 'amount' must be a number" });
+    return;
+  }
+
+  if (amount > 0) {
+    amount = -amount;
+  }
+
+  transactions[index] = {
+    ...transactions[index],
+    ...(date !== undefined && { date }),
+    ...(recipient !== undefined && { recipient }),
+    ...(amount !== undefined && { amount }),
+  };
+
+  saveTransactions(transactions);
+
+  const updated = transactions[index];
+  const result = { ...updated, classification: classify(updated.recipient) };
+
+  res.json({
+    message: "Transaction updated successfully",
+    transaction: result,
+  });
+});
+
 // Post transaction
 app.post("/transactions", (req: Request, res: Response) => {
   if (
