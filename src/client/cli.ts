@@ -32,6 +32,25 @@ async function viewOne() {
   console.table(transaction);
 }
 
+async function deleteOne() {
+  const id = await selectTransaction();
+  const confirmDelete = await confirm({
+    message: `Are you sure you want to delete this transaction?`,
+  });
+  if (!confirmDelete) {
+    console.log("Delete transaction cancelled.");
+  }
+  const response = await apiFetch(`/transactions/${id}`, {
+    method: "DELETE",
+  });
+  const data = await response.json();
+  if (!response.ok) {
+    console.error(data.error);
+  }
+  console.log(data.message);
+  console.table(data.transaction);
+}
+
 async function addTransaction() {
   const date = await input({ message: "Insert date (YYYY-MM-DD):"});
   const recipient = await input({ message: "Insert recipient :"});
@@ -76,6 +95,9 @@ async function main() {
           break;
         case "one":
           await viewOne();
+          break;
+        case "delete":
+          await deleteOne();
           break;
         case "add":
           await addTransaction();
