@@ -2,6 +2,19 @@ import { confirm, input, select } from "@inquirer/prompts";
 
 const BASE_URL = "http://localhost:3000";
 
+async function apiFetch(path: string, options?: RequestInit) {
+  const res = await fetch(`${BASE_URL}${path}`, options);
+  const body = res.status !== 204 ? await res.json() : null;
+  if (!res.ok) throw new Error(body.error ?? `HTTP ${res.status}`);
+  return body;
+}
+
+async function viewAll() {
+  const transactions = await apiFetch("/transactions");
+  console.table(transactions);
+}
+
+// Main cli loop
 async function main() {
   console.log("======= Internet Back =======\n");
   while (true) {
@@ -20,6 +33,16 @@ async function main() {
 
     if (action === "exit") {
       break;
+    }
+
+    try {
+      switch (action) {
+        case "all":
+          await viewAll();
+          break;
+      }
+    } catch (err) {
+      console.error(`\nError: ${(err as Error).message}\n`);
     }
   }
 }
