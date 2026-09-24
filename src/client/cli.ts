@@ -1,4 +1,4 @@
-import { confirm, input, select } from "@inquirer/prompts";
+import { confirm, input, number, select } from "@inquirer/prompts";
 
 const BASE_URL = "http://localhost:3000";
 
@@ -32,6 +32,22 @@ async function viewOne() {
   console.table(transaction);
 }
 
+async function addTransaction() {
+  const date = await input({ message: "Insert date (YYYY-MM-DD):"});
+  const recipient = await input({ message: "Insert recipient :"});
+  const amount = await number({ message: "Insert amount:" });
+
+  const newTransaction = await apiFetch("/transactions", {
+    method: "POST",
+    headers: {"Content-Type": "application/json" },
+    body: JSON.stringify({ date, recipient, amount })
+  });
+
+
+  console.log(newTransaction.message)
+  console.table(newTransaction.transaction);
+}
+
 // Main cli loop
 async function main() {
   console.log("======= Internet Back =======\n");
@@ -61,6 +77,10 @@ async function main() {
         case "one":
           await viewOne();
           break;
+        case "add":
+          await addTransaction();
+          break;
+
       }
     } catch (err) {
       console.error(`\nError: ${(err as Error).message}\n`);
