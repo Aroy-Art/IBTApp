@@ -39,6 +39,24 @@ async function viewOne() {
   console.table(transaction);
 }
 
+async function addTransaction() {
+  const date = await input({
+    message: "Insert date (YYYY-MM-DD):",
+    validate: validateDate,
+  });
+  const recipient = await input({ message: "Insert recipient :" });
+  const amount = await number({ message: "Insert amount:" });
+
+  const newTransaction = await apiFetch("/transactions", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ date, recipient, amount }),
+  });
+
+  console.log(newTransaction.message);
+  console.table(newTransaction.transaction);
+}
+
 async function updateOne() {
   const id = await selectTransaction();
   const transaction = await apiFetch(`/transactions/${id}`);
@@ -103,24 +121,6 @@ async function deleteOne() {
   console.table(data.transaction);
 }
 
-async function addTransaction() {
-  const date = await input({
-    message: "Insert date (YYYY-MM-DD):",
-    validate: validateDate,
-  });
-  const recipient = await input({ message: "Insert recipient :" });
-  const amount = await number({ message: "Insert amount:" });
-
-  const newTransaction = await apiFetch("/transactions", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ date, recipient, amount }),
-  });
-
-  console.log(newTransaction.message);
-  console.table(newTransaction.transaction);
-}
-
 // Main cli loop
 async function main() {
   console.log("======= Internet Back =======\n");
@@ -150,14 +150,14 @@ async function main() {
         case "one":
           await viewOne();
           break;
+        case "add":
+          await addTransaction();
+          break;
         case "update":
           await updateOne();
           break;
         case "delete":
           await deleteOne();
-          break;
-        case "add":
-          await addTransaction();
           break;
       }
     } catch (err) {
