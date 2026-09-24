@@ -171,7 +171,7 @@ app.post("/transactions", (req: Request, res: Response) => {
     classification: classify(transaction.recipient),
   };
   res.status(201).json({
-    error: "New transaction added successfully",
+    message: "New transaction added successfully",
     transaction: result,
   });
 });
