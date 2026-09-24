@@ -2,6 +2,13 @@ import { confirm, input, number, select } from "@inquirer/prompts";
 
 const BASE_URL = "http://localhost:3000";
 
+function validateDate(date: string) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return "Format must be YYYY-MM-DD";
+  const d = new Date(date);
+  if (isNaN(d.getTime())) return "Invalid date";
+  return true;
+}
+
 async function apiFetch(path: string, options?: RequestInit) {
   const res = await fetch(`${BASE_URL}${path}`, options);
   const body = res.status !== 204 ? await res.json() : null;
@@ -45,7 +52,10 @@ async function updateOne() {
   });
 
   if (dateConfirm) {
-    date = await input({ message: "Insert date (YYYY-MM-DD):" });
+    date = await input({
+      message: "Insert date (YYYY-MM-DD):",
+      validate: validateDate,
+    });
   }
 
   const recipientConfirm = await confirm({
@@ -94,7 +104,10 @@ async function deleteOne() {
 }
 
 async function addTransaction() {
-  const date = await input({ message: "Insert date (YYYY-MM-DD):" });
+  const date = await input({
+    message: "Insert date (YYYY-MM-DD):",
+    validate: validateDate,
+  });
   const recipient = await input({ message: "Insert recipient :" });
   const amount = await number({ message: "Insert amount:" });
 
