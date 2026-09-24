@@ -8,6 +8,7 @@ import {
   loadTransactions,
   saveTransactions,
 } from "./data";
+import { isDateString, isUUID } from "./utils";
 
 const app = express();
 const PORT = 3000;
@@ -47,33 +48,60 @@ app.get("/transactions/:id", (req: Request, res: Response) => {
 //post transaction
 
 app.post("/transactions", (req: Request, res: Response) => {
+	let { date, recipient, amount } = req.body;
+	
+  if (!date || !isDateString(date)) {
+    res.status(400).json({ error: "Invalid 'date'. Use YYYY-MM-DD"});
+	return;
+  }
+  if (typeof recipient !== "string") {
+    return res.status(400).json({ error: "Recipient is required" });
+  }
+  if (typeof amount !== "number") {
+    return res.status(400).json({ error: "Amount is required" });
+  }
+  if (amount > 0) {
+    amount = -amount;
+  }
 
-	if (
-		!req.body.date || 
-		!req.body.recipient ||
-		!req.body.amount ||
-		typeof req.body.date !== "string" ||
-        typeof req.body.recipient !== "string" ||
-        typeof req.body.amount !== "number") {
-		return res.status(400).json({ message:"All fields are required"});
-	} 
+  const transactions = loadTransactions();
+  const newTransaction = {
+    id: crypto.randomUUID(),
+    date,
+    recipient,
+    amount
+  };
 
-	const transactions = loadTransactions();
-
-	const newTransaction = {
-		id: transactions.length + 1,
-		date: req.body.date,
-		recipient: req.body.recipient,
-		amount: req.body.amount
-    };
-
-	transactions.push(newTransaction);
-	saveTransactions(transactions);
-    res.status(201).json({message: "New transaction added successfully", transaction:newTransaction})
-
+  transactions.push(newTransaction);
+  saveTransactions(transactions);
+  res.status(201).json({
+    error: "New transaction added successfully",
+    transaction: newTransaction,
+  });
 });
 
+// Delete transaction
+app.delete("/transactions/:id", (req: Request, res: Response) => {
+  const id = String(req.params.id);
+  if (!isUUID(id)) {
+    res.status(400).json({ message: "Invalid id" });
+    return;
+  }
 
+  let transactions = loadTransactions();
+  const seclectedTransaction = transactions.find((t) => t.id === id);
+  if (!seclectedTransaction) {
+    res.status(404).json({ message: "Transaction not found" });
+    return;
+  }
+  transactions = transactions.filter((t) => t.id !== id);
+
+  saveTransactions(transactions);
+  res.json({
+    message: "Transaction deleted successfully.",
+    transaction: seclectedTransaction,
+  });
+});
 
 // Catch all other paths and return 404
 app.use((_req: Request, res: Response) => {
