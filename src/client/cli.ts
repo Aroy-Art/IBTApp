@@ -26,6 +26,12 @@ async function viewAll() {
   console.table(transactions);
 }
 
+async function viewOne() {
+  const id = await selectTransaction();
+  const transaction = await apiFetch(`/transactions/${id}`);
+  console.table(transaction);
+}
+
 // Main cli loop
 async function main() {
   console.log("======= Internet Back =======\n");
@@ -51,6 +57,9 @@ async function main() {
       switch (action) {
         case "all":
           await viewAll();
+          break;
+        case "one":
+          await viewOne();
           break;
       }
     } catch (err) {
