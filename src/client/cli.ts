@@ -34,7 +34,7 @@ async function deleteOne() {
   if (!confirmDelete) {
     console.log("Delete transaction cancelled.");
   }
-  const response = await fetch(`http://localhost:3000/transactions/${id}`, {
+  const response = await apiFetch(`/transactions/${id}`, {
     method: "DELETE",
   });
   const data = await response.json();
