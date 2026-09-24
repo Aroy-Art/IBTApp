@@ -67,6 +67,35 @@ async function addTransaction() {
   console.table(newTransaction.transaction);
 }
 
+
+async function filterTransactionByDate() {
+    const fromDate = await input ({ message:"From date (YYYY-MM-DD):"});
+    const toDate = await input ({ message:"To date (YYYY-MM-DD):" });
+
+    const transactions = await apiFetch(`/transactions?from=${fromDate}&to=${toDate}`);
+
+    if (transactions.length === 0) {
+    console.log("No transactions found on these dates.");
+    return;
+  }
+
+  console.table(transactions);
+}
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
 // Main cli loop
 async function main() {
   console.log("======= Internet Back =======\n");
@@ -102,6 +131,8 @@ async function main() {
         case "add":
           await addTransaction();
           break;
+        case "filter":
+          await  filterTransactionByDate();
 
       }
     } catch (err) {
