@@ -32,6 +32,48 @@ async function viewOne() {
   console.table(transaction);
 }
 
+async function updateOne() {
+  const id = await selectTransaction();
+  const transaction = await apiFetch(`/transactions/${id}`);
+
+  let date = transaction.date;
+  let recipient = transaction.recipient;
+  let amount = transaction.amount;
+
+  const dateConfirm = await confirm({
+    message: "Would you like to change the date?",
+  });
+
+  if (dateConfirm) {
+    date = await input({ message: "Insert date (YYYY-MM-DD):" });
+  }
+
+  const recipientConfirm = await confirm({
+    message: "Would you like to change the recipient?",
+  });
+
+  if (recipientConfirm) {
+    recipient = await input({ message: "Insert recipient:" });
+  }
+
+  const amountConfirm = await confirm({
+    message: "Would you like to change the amount?",
+  });
+
+  if (amountConfirm) {
+    amount = await number({ message: "Insert amount:" });
+  }
+
+  const updateTransaction = await apiFetch(`/transactions/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ date, recipient, amount }),
+  });
+
+  console.log(updateTransaction.message);
+  console.table(updateTransaction.transaction);
+}
+
 async function deleteOne() {
   const id = await selectTransaction();
   const confirmDelete = await confirm({
@@ -52,18 +94,17 @@ async function deleteOne() {
 }
 
 async function addTransaction() {
-  const date = await input({ message: "Insert date (YYYY-MM-DD):"});
-  const recipient = await input({ message: "Insert recipient :"});
+  const date = await input({ message: "Insert date (YYYY-MM-DD):" });
+  const recipient = await input({ message: "Insert recipient :" });
   const amount = await number({ message: "Insert amount:" });
 
   const newTransaction = await apiFetch("/transactions", {
     method: "POST",
-    headers: {"Content-Type": "application/json" },
-    body: JSON.stringify({ date, recipient, amount })
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ date, recipient, amount }),
   });
 
-
-  console.log(newTransaction.message)
+  console.log(newTransaction.message);
   console.table(newTransaction.transaction);
 }
 
@@ -96,13 +137,15 @@ async function main() {
         case "one":
           await viewOne();
           break;
+        case "update":
+          await updateOne();
+          break;
         case "delete":
           await deleteOne();
           break;
         case "add":
           await addTransaction();
           break;
-
       }
     } catch (err) {
       console.error(`\nError: ${(err as Error).message}\n`);
