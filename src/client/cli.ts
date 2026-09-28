@@ -109,14 +109,11 @@ async function deleteOne() {
   });
   if (!confirmDelete) {
     console.log("Delete transaction cancelled.");
+    return;
   }
-  const response = await apiFetch(`/transactions/${id}`, {
+  const data = await apiFetch(`/transactions/${id}`, {
     method: "DELETE",
   });
-  const data = await response.json();
-  if (!response.ok) {
-    console.error(data.error);
-  }
   console.log(data.message);
   console.table(data.transaction);
 }
