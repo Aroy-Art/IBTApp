@@ -7,7 +7,8 @@ CREATE TABLE transactions (
 );
 
 CREATE INDEX transactions_created_at_idx ON transactions(created_at);
-CREATE UNIQUE INDEX transactions_recipient_lower_idx ON transactions(LOWER(recipient));
+CREATE INDEX transactions_updated_at_idx ON transactions(updated_at);
+CREATE INDEX transactions_recipient_idx ON transactions(recipient);
 
 INSERT INTO transactions (created_at, recipient, amount)
 VALUES
