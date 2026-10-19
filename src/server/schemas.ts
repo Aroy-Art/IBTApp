@@ -9,6 +9,14 @@ export const transactionSchema = z.object({
   amount: z.number("Amount must be a number"),
 });
 
+export const dateRangeQuery = z.object({
+    from: dateSchema.optional(),
+    to: dateSchema.optional(),
+  })
+  .refine((q) => !q.from || !q.to || q.from <= q.to, {
+    error: "'from' date must be before 'to' date",
+  });
+
 // pick means take only the id field
 
 export const idParamsSchema = transactionSchema.pick({ id: true });
@@ -28,3 +36,14 @@ export const classificationSchema = z.enum([
   "Entertainment",
   "Unknown",
 ]);
+
+export type Classification = z.infer<typeof classificationSchema>;
+
+export interface Transaction {
+  id: string;
+  date: string;
+  recipient: string;
+  amount: number;
+  classification?: Classification;
+  message?: string;
+}
