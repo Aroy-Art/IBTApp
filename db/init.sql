@@ -6,6 +6,9 @@ CREATE TABLE transactions (
   amount INT NOT NULL
 );
 
+CREATE INDEX transactions_created_at_idx ON transactions(created_at);
+CREATE UNIQUE INDEX transactions_recipient_lower_idx ON transactions(LOWER(recipient));
+
 INSERT INTO transactions (created_at, recipient, amount)
 VALUES
 ('2026-09-01', 'ICA', -350),
@@ -20,6 +23,8 @@ CREATE TABLE classifications (
   classification TEXT NOT NULL
     Check (classification IN ('Household', 'Transport', 'Food', 'Entertainment'))
 );
+
+CREATE UNIQUE INDEX classification_recipient_lower_idx ON classifications(LOWER(recipient));
 
 INSERT INTO classifications (recipient, classification)
 VALUES
