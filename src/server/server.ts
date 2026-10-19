@@ -1,5 +1,6 @@
 import type { Request, Response } from "express";
 import express from "express";
+import { z } from "zod";
 
 import type { Classification, ClassificationRule, Transaction } from "./data";
 import {
@@ -8,6 +9,12 @@ import {
   loadTransactions,
   saveTransactions,
 } from "./data";
+import { 
+  createTransactionSchema,
+  dateRangeQuery,
+  idParamsSchema, 
+  updateTransactionSchema, 
+} from "./schemas";
 import { isDateString, isUUID } from "./utils";
 
 const app = express();
@@ -26,30 +33,22 @@ app.use((req: Request, res: Response, next) => {
 
 // Get transactions
 app.get("/transactions", (req: Request, res: Response) => {
+  const valQuery = dateRangeQuery.safeParse(req.query);
+  
+  if (!valQuery.success) {
+    return res.status(400).json({ errors: z.flattenError(valQuery.error) });
+  }
+  
+  const { from, to } = valQuery.data;
+  
   let transactions: Transaction[] = loadTransactions();
 
-  const { from, to } = req.query;
-
-  if (from || to) {
-    if (from && !isDateString(from as string)) {
-      res.status(400).json({ error: "Invalid 'from' date. Use YYYY-MM-DD" });
-      return;
-    }
-    if (to && !isDateString(to as string)) {
-      res.status(400).json({ error: "Invalid 'to' date. Use YYYY-MM-DD" });
-      return;
-    }
-    if (from && to && (from as string) > (to as string)) {
-      res.status(400).json({ error: "'from' date must be before 'to' date" });
-      return;
-    }
-    transactions = transactions.filter((t) => {
-      if (from && t.date < (from as string)) return false;
-      if (to && t.date > (to as string)) return false;
-      return true;
-    });
-  }
-
+  transactions = transactions.filter((t) => {
+    if (from && t.date < (from as string)) return false;
+    if (to && t.date > (to as string)) return false;
+    return true;
+  });
+   
   const classified: Transaction[] = transactions.map((t) => ({
     ...t,
     classification: classify(t.recipient),
@@ -66,11 +65,12 @@ app.get("/classifications", (_req: Request, res: Response) => {
 
 // Get transaction by id
 app.get("/transactions/:id", (req: Request, res: Response) => {
-  const id = String(req.params.id);
-  if (!isUUID(id)) {
-    res.status(400).json({ error: "Invalid id" });
-    return;
+  const valTrans = idParamsSchema.safeParse(req.params);
+
+  if (!valTrans.success) {
+    return res.status(400).json({ errors: z.flattenError(valTrans.error) });
   }
+  const {id} = valTrans.data;
 
   const transactions = loadTransactions();
   const transaction = transactions.find((t) => t.id === id);
@@ -90,11 +90,19 @@ app.get("/transactions/:id", (req: Request, res: Response) => {
 
 // Put transaction by id
 app.put("/transactions/:id", (req: Request, res: Response) => {
-  const id = String(req.params.id);
-  if (!isUUID(id)) {
-    res.status(400).json({ error: "Invalid id" });
-    return;
+  const valId = idParamsSchema.safeParse(req.params);
+
+  if (!valId.success) {
+    return res.status(400).json({ errors: z.flattenError(valId.error) });
   }
+  const { id } = valId.data;
+  const valBody = updateTransactionSchema.safeParse(req.body);
+
+  if (!valBody.success) {
+    return res.status(400).json({ errors: z.flattenError(valBody.error) });
+  }
+
+  let { date, recipient, amount } = valBody.data;
 
   const transactions = loadTransactions();
   const index = transactions.findIndex((t) => t.id === id);
@@ -104,18 +112,7 @@ app.put("/transactions/:id", (req: Request, res: Response) => {
     return;
   }
 
-  let { date, recipient, amount } = req.body;
-
-  if (date && !isDateString(date as string)) {
-    res.status(400).json({ error: "Invalid 'date' date. Use YYYY-MM-DD" });
-    return;
-  }
-  if (amount !== undefined && typeof amount !== "number") {
-    res.status(400).json({ error: "Invalid 'amount' must be a number" });
-    return;
-  }
-
-  if (amount > 0) {
+  if (amount !== undefined && amount > 0) {
     amount = -amount;
   }
 
@@ -139,18 +136,14 @@ app.put("/transactions/:id", (req: Request, res: Response) => {
 
 // Post transaction
 app.post("/transactions", (req: Request, res: Response) => {
-  let { date, recipient, amount } = req.body;
+  const valBody = createTransactionSchema.safeParse(req.body);
 
-  if (!date || !isDateString(date)) {
-    res.status(400).json({ error: "Invalid 'date'. Use YYYY-MM-DD" });
-    return;
+  if(!valBody.success){
+    return res.status(400).json({errors: z.flattenError(valBody.error)});
   }
-  if (typeof recipient !== "string") {
-    return res.status(400).json({ error: "Recipient is required" });
-  }
-  if (typeof amount !== "number") {
-    return res.status(400).json({ error: "Amount is required" });
-  }
+
+  let { date, recipient, amount } = valBody.data;
+
   if (amount > 0) {
     amount = -amount;
   }
@@ -178,11 +171,13 @@ app.post("/transactions", (req: Request, res: Response) => {
 
 // Delete transaction
 app.delete("/transactions/:id", (req: Request, res: Response) => {
-  const id = String(req.params.id);
-  if (!isUUID(id)) {
-    res.status(400).json({ message: "Invalid id" });
-    return;
+  const valTrans = idParamsSchema.safeParse(req.params);
+
+  if (!valTrans.success) {
+    return res.status(400).json({ errors: z.flattenError(valTrans.error) });
   }
+
+  const { id } = valTrans.data;
 
   let transactions = loadTransactions();
   const seclectedTransaction = transactions.find((t) => t.id === id);
