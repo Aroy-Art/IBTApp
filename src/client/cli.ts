@@ -50,7 +50,7 @@ async function addTransaction() {
   const newTransaction = await apiFetch("/transactions", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ date, recipient, amount }),
+    body: JSON.stringify({ created_at: date, recipient, amount }),
   });
 
   console.log(newTransaction.message);
