@@ -5,6 +5,7 @@ import { z } from "zod";
 import type { Classification, ClassificationRule } from "./data";
 import {
   classify,
+  deleteTransaction,
   getTransaction,
   getTransactions,
   loadClassificationRules,
@@ -156,32 +157,18 @@ app.post("/transactions", (req: Request, res: Response) => {
 });
 
 // Delete transaction
-app.delete("/transactions/:id", (req: Request, res: Response) => {
-  const valTrans = idParamsSchema.safeParse(req.params);
+app.delete("/transactions/:id", async (req: Request, res: Response) => {
+  const params = validate(idParamsSchema, req.params, res);
+  if (!params) return;
 
-  if (!valTrans.success) {
-    return res.status(400).json({ errors: z.flattenError(valTrans.error) });
-  }
+  const transaction = await deleteTransaction(params.id);
 
-  const { id } = valTrans.data;
-
-  let transactions = loadTransactions();
-  const seclectedTransaction = transactions.find((t) => t.id === id);
-  if (!seclectedTransaction) {
-    res.status(404).json({ message: "Transaction not found" });
+  if (!transaction) {
+    res.status(404).json({ error: `Transaction ${params.id} not found` });
     return;
   }
-  transactions = transactions.filter((t) => t.id !== id);
 
-  saveTransactions(transactions);
-  const result = {
-    ...seclectedTransaction,
-    classification: classify(seclectedTransaction.recipient),
-  };
-  res.json({
-    message: "Transaction deleted successfully.",
-    transaction: result,
-  });
+  res.json({ message: "Transaction deleted successfully.", transaction });
 });
 
 // Catch all other paths and return 404

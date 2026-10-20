@@ -84,3 +84,11 @@ export function classify(recipient: string): Classification {
   );
   return match ? match.classification : "Unknown";
 }
+
+export async function deleteTransaction(id: string): Promise<Transaction | undefined> {
+  const { rows } = await db.query<Transaction>(
+    `WITH t AS (DELETE FROM transactions WHERE id = $1 RETURNING *) ${CLASSIFIED}`,
+    [id],
+  );
+  return rows[0] ?? undefined;
+}
