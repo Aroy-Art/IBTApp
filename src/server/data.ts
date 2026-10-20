@@ -3,15 +3,9 @@ import path from "node:path";
 
 import { pool as db } from "./db";
 
-<<<<<<< Updated upstream
 
 import type { CreateTransaction, DateRangeQuery, Transaction } from "./schemas";
 
-=======
-
-import { type DateRangeQuery, type Transaction, updateTransactionSchema } from "./schemas";
-
->>>>>>> Stashed changes
 
 export type Classification =
   | "Household"
