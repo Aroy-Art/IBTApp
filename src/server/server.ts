@@ -2,23 +2,38 @@ import type { Request, Response } from "express";
 import express from "express";
 import { z } from "zod";
 
-import type { Classification, ClassificationRule, Transaction } from "./data";
+import type { Classification, ClassificationRule } from "./data";
 import {
   classify,
+  getTransaction,
+  getTransactions,
   loadClassificationRules,
   loadTransactions,
   saveTransactions,
 } from "./data";
-import { 
+import {
   createTransactionSchema,
-  dateRangeQuery,
-  idParamsSchema, 
-  updateTransactionSchema, 
+  DateRangeQuerySchema,
+  idParamsSchema,
+  updateTransactionSchema,
 } from "./schemas";
 import { isDateString, isUUID } from "./utils";
 
 const app = express();
 const PORT = 3000;
+
+function validate<T extends z.ZodType>(
+  schema: T,
+  data: unknown,
+  res: Response,
+): z.infer<T> | undefined {
+  const result = schema.safeParse(data);
+  if (!result.success) {
+    res.status(400).json({ error: z.prettifyError(result.error) });
+    return undefined;
+  }
+  return result.data;
+}
 
 app.use(express.json());
 
@@ -32,29 +47,11 @@ app.use((req: Request, res: Response, next) => {
 });
 
 // Get transactions
-app.get("/transactions", (req: Request, res: Response) => {
-  const valQuery = dateRangeQuery.safeParse(req.query);
-  
-  if (!valQuery.success) {
-    return res.status(400).json({ errors: z.flattenError(valQuery.error) });
-  }
-  
-  const { from, to } = valQuery.data;
-  
-  let transactions: Transaction[] = loadTransactions();
+app.get("/transactions", async (req: Request, res: Response) => {
+  const query = validate(DateRangeQuerySchema, req.query, res);
+  if (!query) return;
 
-  transactions = transactions.filter((t) => {
-    if (from && t.date < (from as string)) return false;
-    if (to && t.date > (to as string)) return false;
-    return true;
-  });
-   
-  const classified: Transaction[] = transactions.map((t) => ({
-    ...t,
-    classification: classify(t.recipient),
-  }));
-
-  res.json(classified);
+  res.json(await getTransactions(query));
 });
 
 // Get classifications
@@ -64,28 +61,17 @@ app.get("/classifications", (_req: Request, res: Response) => {
 });
 
 // Get transaction by id
-app.get("/transactions/:id", (req: Request, res: Response) => {
-  const valTrans = idParamsSchema.safeParse(req.params);
+app.get("/transactions/:id", async (req: Request, res: Response) => {
+  const params = validate(idParamsSchema, req.params, res);
+  if (!params) return;
 
-  if (!valTrans.success) {
-    return res.status(400).json({ errors: z.flattenError(valTrans.error) });
-  }
-  const {id} = valTrans.data;
-
-  const transactions = loadTransactions();
-  const transaction = transactions.find((t) => t.id === id);
-
+  const transaction = await getTransaction(params.id);
   if (!transaction) {
-    res.status(404).json({ error: "Transaction not found" });
+    res.status(404).json({ error: `Transaction ${params.id} not found` });
     return;
   }
 
-  const classified: Transaction = {
-    ...transaction,
-    classification: classify(transaction?.recipient),
-  };
-
-  res.json(classified);
+  res.json(transaction);
 });
 
 // Put transaction by id
@@ -138,8 +124,8 @@ app.put("/transactions/:id", (req: Request, res: Response) => {
 app.post("/transactions", (req: Request, res: Response) => {
   const valBody = createTransactionSchema.safeParse(req.body);
 
-  if(!valBody.success){
-    return res.status(400).json({errors: z.flattenError(valBody.error)});
+  if (!valBody.success) {
+    return res.status(400).json({ errors: z.flattenError(valBody.error) });
   }
 
   let { date, recipient, amount } = valBody.data;
