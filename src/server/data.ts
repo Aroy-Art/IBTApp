@@ -1,6 +1,9 @@
 import fs from "node:fs";
 import path from "node:path";
 
+import { pool as db } from "./db";
+import type { DateRangeQuery, Transaction } from "./schemas";
+
 export type Classification =
   | "Household"
   | "Transport"
@@ -8,21 +11,46 @@ export type Classification =
   | "Entertainment"
   | "Unknown";
 
-export interface Transaction {
-  id: string;
-  date: string;
-  recipient: string;
-  amount: number;
-  classification?: Classification;
-  message?: string;
-}
-
 export interface ClassificationRule {
   recipient: string[];
   classification: Exclude<Classification, "Unknown">;
 }
 
 const DATA_DIR = path.join(__dirname, "../../data");
+
+const CLASSIFIED = `
+  SELECT t.id, t.created_at, t.recipient, t.amount,
+         COALESCE(c.classification, 'Unknown') AS classification
+  FROM t
+  LEFT JOIN classifications c ON LOWER(c.recipient) = LOWER(t.recipient)
+`;
+
+export async function getTransactions({
+  from,
+  to,
+}: DateRangeQuery): Promise<Transaction[]> {
+  const { rows } = await db.query<Transaction>(
+    `WITH t AS (
+       SELECT * FROM transactions
+       WHERE ($1::date IS NULL OR created_at >= $1)
+         AND ($2::date IS NULL OR created_at <= $2)
+     )
+     ${CLASSIFIED}
+     ORDER BY t.created_at, t.recipient`,
+    [from ?? null, to ?? null],
+  );
+  return rows;
+}
+
+export async function getTransaction(
+  id: string,
+): Promise<Transaction | undefined> {
+  const { rows } = await db.query<Transaction>(
+    `WITH t AS (SELECT * FROM transactions WHERE id = $1) ${CLASSIFIED}`,
+    [id],
+  );
+  return rows[0] ?? undefined;
+}
 
 export function loadTransactions(): Transaction[] {
   const raw = fs.readFileSync(path.join(DATA_DIR, "transactions.json"), {

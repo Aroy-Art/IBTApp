@@ -1,21 +1,26 @@
 import { z } from "zod";
 
-const dateSchema = z.iso.date("Use the format YYYY-MM-DD" );
+const dateSchema = z.iso.date("Use the format YYYY-MM-DD");
 
 export const transactionSchema = z.object({
   id: z.uuid("Invalid ID"),
+  created_at: dateSchema,
+  updated_at: dateSchema.optional(),
   date: dateSchema,
   recipient: z.string().min(1, "Recipient is required"),
   amount: z.number("Amount must be a number"),
 });
 
-export const dateRangeQuery = z.object({
+export const DateRangeQuerySchema = z
+  .object({
     from: dateSchema.optional(),
     to: dateSchema.optional(),
   })
   .refine((q) => !q.from || !q.to || q.from <= q.to, {
     error: "'from' date must be before 'to' date",
   });
+
+export type DateRangeQuery = z.infer<typeof DateRangeQuerySchema>;
 
 // pick means take only the id field
 
@@ -41,9 +46,10 @@ export type Classification = z.infer<typeof classificationSchema>;
 
 export interface Transaction {
   id: string;
-  date: string;
   recipient: string;
   amount: number;
+  created_at: string;
+  updated_at?: string;
   classification?: Classification;
   message?: string;
 }
