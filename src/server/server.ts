@@ -128,6 +128,10 @@ app.post("/transactions", async (req: Request, res: Response) => {
 
   if (!valBody) return;
 
+  if (valBody.amount > 0) {
+    valBody.amount = -valBody.amount;
+  }
+
   const transaction = await createTransaction(valBody);
 
   res.status(201).json({
