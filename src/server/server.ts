@@ -5,6 +5,7 @@ import { z } from "zod";
 import type { Classification, ClassificationRule } from "./data";
 import {
   classify,
+  createTransaction,
   deleteTransaction,
   getTransaction,
   getTransactions,
@@ -122,37 +123,16 @@ app.put("/transactions/:id", (req: Request, res: Response) => {
 });
 
 // Post transaction
-app.post("/transactions", (req: Request, res: Response) => {
-  const valBody = createTransactionSchema.safeParse(req.body);
+app.post("/transactions", async (req: Request, res: Response) => {
+  const valBody = validate(createTransactionSchema, req.body, res);
 
-  if (!valBody.success) {
-    return res.status(400).json({ errors: z.flattenError(valBody.error) });
-  }
+  if (!valBody) return;
 
-  let { date, recipient, amount } = valBody.data;
+  const transaction = await createTransaction(valBody);
 
-  if (amount > 0) {
-    amount = -amount;
-  }
-
-  const transactions = loadTransactions();
-  const newTransaction = {
-    id: crypto.randomUUID(),
-    date,
-    recipient,
-    amount,
-  };
-
-  transactions.push(newTransaction);
-  saveTransactions(transactions);
-  const transaction = newTransaction;
-  const result = {
-    ...transaction,
-    classification: classify(transaction.recipient),
-  };
   res.status(201).json({
     message: "New transaction added successfully",
-    transaction: result,
+    transaction,
   });
 });
 
