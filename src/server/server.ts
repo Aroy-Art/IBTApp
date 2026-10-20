@@ -14,7 +14,7 @@ import {
 } from "./data";
 import {
   createTransactionSchema,
-  DateRangeQuerySchema,
+  dateRangeQuerySchema,
   idParamsSchema,
   updateTransactionSchema,
 } from "./schemas";
@@ -49,7 +49,7 @@ app.use((req: Request, res: Response, next) => {
 
 // Get transactions
 app.get("/transactions", async (req: Request, res: Response) => {
-  const query = validate(DateRangeQuerySchema, req.query, res);
+  const query = validate(dateRangeQuerySchema, req.query, res);
   if (!query) return;
 
   res.json(await getTransactions(query));
