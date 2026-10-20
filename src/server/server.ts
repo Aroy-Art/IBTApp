@@ -5,22 +5,22 @@ import { z } from "zod";
 import type { Classification, ClassificationRule } from "./data";
 import {
   classify,
-  createTransaction,
   deleteTransaction,
   getTransaction,
   getTransactions,
   loadClassificationRules,
   loadTransactions,
   saveTransactions,
+  updateTransaction
 } from "./data";
 import { pool as db } from "./db";
 import {
   createTransactionSchema,
-  dateRangeQuerySchema,
+  DateRangeQuerySchema,
   idParamsSchema,
   updateTransactionSchema,
 } from "./schemas";
-import { isDateString, isUUID } from "./utils";
+
 
 const app = express();
 const PORT = Number(process.env.PORT ?? 3000);
@@ -51,7 +51,7 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 
 // Get transactions
 app.get("/transactions", async (req: Request, res: Response) => {
-  const query = validate(dateRangeQuerySchema, req.query, res);
+  const query = validate(DateRangeQuerySchema, req.query, res);
   if (!query) return;
 
   res.json(await getTransactions(query));
@@ -78,14 +78,40 @@ app.get("/transactions/:id", async (req: Request, res: Response) => {
 });
 
 // Put transaction by id
-app.put("/transactions/:id", (req: Request, res: Response) => {
-  const valId = idParamsSchema.safeParse(req.params);
 
-  if (!valId.success) {
-    return res.status(400).json({ errors: z.flattenError(valId.error) });
+app.put("/transactions/:id", async (req: Request, res: Response) => {
+  const params = validate(idParamsSchema, req.params, res);
+  if (!params) return;
+
+  const valId = validate(updateTransactionSchema, req.body, res);
+  if (!valId) return;
+
+  const amount = valId.amount !== undefined && valId.amount > 0 ? - valId.amount : valId.amount;
+  
+  const transaction = await updateTransaction(params.id, {
+    created_at: valId.date,
+    recipient: valId.recipient,
+    amount,
+  });
+
+  if (!transaction) {
+    res.status(404).json({ error: `Transaction ${params.id} not found` });
+    return;
   }
-  const { id } = valId.data;
-  const valBody = updateTransactionSchema.safeParse(req.body);
+
+  res.json({
+    message: "Transaction updated successfully",
+    transaction,
+  });
+});
+
+
+
+
+
+// Post transaction
+app.post("/transactions", (req: Request, res: Response) => {
+  const valBody = createTransactionSchema.safeParse(req.body);
 
   if (!valBody.success) {
     return res.status(400).json({ errors: z.flattenError(valBody.error) });
@@ -93,25 +119,19 @@ app.put("/transactions/:id", (req: Request, res: Response) => {
 
   let { date, recipient, amount } = valBody.data;
 
-  const transactions = loadTransactions();
-  const index = transactions.findIndex((t) => t.id === id);
-
-  if (index === -1) {
-    res.status(404).json({ error: `Transaction ${id} not found` });
-    return;
-  }
-
-  if (amount !== undefined && amount > 0) {
+  if (amount > 0) {
     amount = -amount;
   }
 
-  transactions[index] = {
-    ...transactions[index],
-    ...(date !== undefined && { date }),
-    ...(recipient !== undefined && { recipient }),
-    ...(amount !== undefined && { amount }),
+  const transactions = loadTransactions();
+  const newTransaction = {
+    id: crypto.randomUUID(),
+    date,
+    recipient,
+    amount,
   };
 
+  transactions.push(newTransaction);
   saveTransactions(transactions);
 
   const updated = transactions[index];
@@ -137,7 +157,7 @@ app.post("/transactions", async (req: Request, res: Response) => {
 
   res.status(201).json({
     message: "New transaction added successfully",
-    transaction,
+    transaction: result,
   });
 });
 
