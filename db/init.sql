@@ -1,7 +1,7 @@
 CREATE TABLE transactions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   created_at DATE NOT NULL,
-  updated_at DATE,
+  updated_at DATE DEFAULT NOW(),
   recipient TEXT NOT NULL,
   amount INT NOT NULL
 );
