@@ -1,6 +1,3 @@
-import fs from "node:fs";
-import path from "node:path";
-
 import { pool as db } from "./db";
 import type {
   CreateTransaction,
@@ -8,20 +5,6 @@ import type {
   Transaction,
   UpdateTransaction,
 } from "./schemas";
-
-export type Classification =
-  | "Household"
-  | "Transport"
-  | "Food"
-  | "Entertainment"
-  | "Unknown";
-
-export interface ClassificationRule {
-  recipient: string[];
-  classification: Exclude<Classification, "Unknown">;
-}
-
-const DATA_DIR = path.join(__dirname, "../../data");
 
 const CLASSIFIED = `
   SELECT t.id, t.created_at, t.recipient, t.amount,
@@ -67,39 +50,6 @@ export async function createTransaction({
     [created_at, recipient, amount],
   );
   return rows[0];
-}
-
-export function loadTransactions(): Transaction[] {
-  const raw = fs.readFileSync(path.join(DATA_DIR, "transactions.json"), {
-    encoding: "utf-8",
-    flag: "r",
-  });
-  return JSON.parse(raw);
-}
-
-export function saveTransactions(transactions: Transaction[]): void {
-  fs.writeFileSync(
-    path.join(DATA_DIR, "transactions.json"),
-    JSON.stringify(transactions, null, 2),
-  );
-}
-
-export function loadClassificationRules(): ClassificationRule[] {
-  const raw = fs.readFileSync(path.join(DATA_DIR, "classifications.json"), {
-    encoding: "utf-8",
-    flag: "r",
-  });
-  return JSON.parse(raw);
-}
-
-export function classify(recipient: string): Classification {
-  const rules = loadClassificationRules();
-  const match = rules.find((rule) =>
-    rule.recipient.some(
-      (name) => name.toLowerCase() === recipient.toLowerCase(),
-    ),
-  );
-  return match ? match.classification : "Unknown";
 }
 
 export async function deleteTransaction(

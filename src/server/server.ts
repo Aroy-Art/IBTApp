@@ -2,16 +2,11 @@ import type { NextFunction, Request, Response } from "express";
 import express from "express";
 import { z } from "zod";
 
-import type { Classification, ClassificationRule } from "./data";
 import {
-  classify,
   createTransaction,
   deleteTransaction,
   getTransaction,
   getTransactions,
-  loadClassificationRules,
-  loadTransactions,
-  saveTransactions,
   updateTransaction,
 } from "./data";
 import { pool as db } from "./db";
