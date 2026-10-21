@@ -1,4 +1,4 @@
-import type { Request, Response } from "express";
+import type { NextFunction, Request, Response } from "express";
 import express from "express";
 import { z } from "zod";
 
@@ -41,7 +41,7 @@ function validate<T extends z.ZodType>(
 app.use(express.json());
 
 // log the requests to terminal
-app.use((req: Request, res: Response, next) => {
+app.use((req: Request, res: Response, next: NextFunction) => {
   res.on("finish", () => {
     console.log(`${req.method} ${req.url} ${res.statusCode}`);
   });
@@ -159,6 +159,15 @@ app.delete("/transactions/:id", async (req: Request, res: Response) => {
 // Catch all other paths and return 404
 app.use((_req: Request, res: Response) => {
   res.status(404).json({ error: "Not Found" });
+});
+
+app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
+  if (err instanceof SyntaxError) {
+    res.status(400).json({ error: "Request body is not valid JSON" });
+    return;
+  }
+  console.error(err);
+  res.status(500).json({ error: "Internal Server Error" });
 });
 
 // Check DB Connection before start
