@@ -2,6 +2,16 @@
 
 A REST API with a terminal UI for managing bank transactions. The server stores transactions as JSON and auto-classifies them by recipient.
 
+## Set up environment file
+
+Create .env file. Copy sample file (.env.sample) and fill to your liking.
+
+## Start container
+
+```bash
+docker-compose up -d
+```
+
 ## Install
 
 ```bash
@@ -100,9 +110,9 @@ Launch with `npm run client`. Use arrow keys to navigate the menu, Enter to sele
 
 **Date filter bounds** — `from` and `to` are inclusive. A transaction on exactly the `from` or `to` date is included.
 
-**Invalid dates** — requests with a malformed date (not `YYYY-MM-DD`) return `400 Bad Request`.
-
 **`from` after `to`** — if `from > to`, the request returns `400 Bad Request`.
+
+**Invalid dates** — requests with a malformed date (not `YYYY-MM-DD`) return `400 Bad Request`.
 
 **No matching classification** — transactions whose recipient matches no rule get `classification: "Unknown"`. Classification is never stored, always derived at read time.
 
@@ -118,4 +128,4 @@ Launch with `npm run client`. Use arrow keys to navigate the menu, Enter to sele
 
 **HTTP status codes** — `200` for successful reads/updates/deletes, `201` for successful create, `400` for validation errors, `404` for missing resources.
 
-**Race conditions** — `loadTransactions` and `saveTransactions` use synchronous I/O (`readFileSync`/`writeFileSync`). No race condition possible — Node.js is single-threaded and sync ops block the event loop, preventing handler interleaving.
+**Race conditions** — Database handles race conditions for us.
