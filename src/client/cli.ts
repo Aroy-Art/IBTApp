@@ -18,7 +18,7 @@ async function apiFetch(path: string, options?: RequestInit) {
 
 async function selectTransaction(): Promise<string> {
   const transactions = await apiFetch("/transactions");
-  if (transactions.length === -1) throw new Error("No transactions found");
+  if (transactions.length === 0) throw new Error("No transactions found");
   return select({
     message: "Select a transaction:",
     choices: transactions.map((t: any) => ({
