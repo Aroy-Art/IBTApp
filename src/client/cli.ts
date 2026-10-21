@@ -22,7 +22,7 @@ async function selectTransaction(): Promise<string> {
   return select({
     message: "Select a transaction:",
     choices: transactions.map((t: any) => ({
-      name: `${t.date}  ${t.recipient.padEnd(29)}  ${t.amount}`,
+      name: `${t.created_at}  ${t.recipient.padEnd(29)}  ${t.amount}`,
       value: t.id,
     })),
   });
