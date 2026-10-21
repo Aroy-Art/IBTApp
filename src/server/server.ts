@@ -13,6 +13,7 @@ import {
   loadTransactions,
   saveTransactions,
 } from "./data";
+import { pool as db } from "./db";
 import {
   createTransactionSchema,
   dateRangeQuerySchema,
@@ -22,7 +23,7 @@ import {
 import { isDateString, isUUID } from "./utils";
 
 const app = express();
-const PORT = 3000;
+const PORT = Number(process.env.PORT ?? 3000);
 
 function validate<T extends z.ZodType>(
   schema: T,
@@ -160,6 +161,15 @@ app.use((_req: Request, res: Response) => {
   res.status(404).json({ error: "Not Found" });
 });
 
-app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
-});
+// Check DB Connection before start
+db.query(`SELECT 1`)
+  .then(() => {
+    app.listen(PORT, () => {
+      console.log(`Server is running on http://localhost:${PORT}`);
+    });
+  })
+  .catch((err: Error) => {
+    console.error(`Could not connect to database: ${err.message}`);
+    console.error("Is it running? Try: docker compose up -d");
+    process.exit(1);
+  });
