@@ -5,7 +5,7 @@ const BASE_URL = "http://localhost:3000";
 function validateDate(date: string) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return "Format must be YYYY-MM-DD";
   const d = new Date(date);
-  if (isNaN(d.getTime())) return "Invalid date";
+  if (Number.isNaN(d.getTime())) return "Invalid date";
   return true;
 }
 
