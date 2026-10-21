@@ -2,10 +2,12 @@ import fs from "node:fs";
 import path from "node:path";
 
 import { pool as db } from "./db";
-
-
-import type { CreateTransaction, DateRangeQuery, Transaction } from "./schemas";
-
+import type {
+  CreateTransaction,
+  DateRangeQuery,
+  Transaction,
+  UpdateTransaction,
+} from "./schemas";
 
 export type Classification =
   | "Household"
@@ -111,10 +113,10 @@ export async function deleteTransaction(
 }
 
 export async function updateTransaction(
-  id:string,
-  {created_at, recipient, amount,}:CreateTransaction,
-):Promise <Transaction | undefined> {
-  const { rows } = await db.query<Transaction> (
+  id: string,
+  { created_at, recipient, amount }: UpdateTransaction,
+): Promise<Transaction | undefined> {
+  const { rows } = await db.query<Transaction>(
     `WITH t AS (
     UPDATE transactions 
       SET created_at = COALESCE($2::date, created_at), 
@@ -123,9 +125,7 @@ export async function updateTransaction(
       WHERE id = $1
       RETURNING *
     ) ${CLASSIFIED}`,
-     [id, created_at ?? null, recipient ?? null, amount ?? null],
+    [id, created_at ?? null, recipient ?? null, amount ?? null],
   );
   return rows[0] ?? undefined;
 }
-
-
