@@ -16,6 +16,7 @@ import {
 } from "./data";
 import { pool as db } from "./db";
 import {
+  classificationSchema,
   createTransactionSchema,
   dateRangeQuerySchema,
   idParamsSchema,
@@ -59,8 +60,7 @@ app.get("/transactions", async (req: Request, res: Response) => {
 
 // Get classifications
 app.get("/classifications", (_req: Request, res: Response) => {
-  const classifications: ClassificationRule[] = loadClassificationRules();
-  res.json(classifications);
+  res.json(classificationSchema.options);
 });
 
 // Get transaction by id
