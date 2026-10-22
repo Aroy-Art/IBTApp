@@ -2,6 +2,21 @@ import { confirm, input, number, select } from "@inquirer/prompts";
 
 const BASE_URL = "http://localhost:3000";
 
+// Mirrors the server's Transaction schema (src/server/schemas.ts)
+type Transaction = {
+  id: string;
+  created_at: string;
+  updated_at: string | null;
+  recipient: string;
+  amount: number;
+  classification: string;
+};
+
+type TransactionResult = {
+  message: string;
+  transaction: Transaction;
+};
+
 function validateDate(date: string) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return "Format must be YYYY-MM-DD";
   const d = new Date(date);
@@ -9,19 +24,19 @@ function validateDate(date: string) {
   return true;
 }
 
-async function apiFetch(path: string, options?: RequestInit) {
+async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
   const res = await fetch(`${BASE_URL}${path}`, options);
   const body = res.status !== 204 ? await res.json() : null;
-  if (!res.ok) throw new Error(body.error ?? `HTTP ${res.status}`);
-  return body;
+  if (!res.ok) throw new Error(body?.error ?? `HTTP ${res.status}`);
+  return body as T;
 }
 
 async function selectTransaction(): Promise<string> {
-  const transactions = await apiFetch("/transactions");
+  const transactions = await apiFetch<Transaction[]>("/transactions");
   if (transactions.length === 0) throw new Error("No transactions found");
   return select({
     message: "Select a transaction:",
-    choices: transactions.map((t: any) => ({
+    choices: transactions.map((t) => ({
       name: `${t.created_at}  ${t.recipient.padEnd(29)}  ${t.amount}`,
       value: t.id,
     })),
@@ -29,13 +44,13 @@ async function selectTransaction(): Promise<string> {
 }
 
 async function viewAll() {
-  const transactions = await apiFetch("/transactions");
+  const transactions = await apiFetch<Transaction[]>("/transactions");
   console.table(transactions);
 }
 
 async function viewOne() {
   const id = await selectTransaction();
-  const transaction = await apiFetch(`/transactions/${id}`);
+  const transaction = await apiFetch<Transaction>(`/transactions/${id}`);
   console.table(transaction);
 }
 
@@ -45,9 +60,9 @@ async function addTransaction() {
     validate: validateDate,
   });
   const recipient = await input({ message: "Insert recipient :" });
-  const amount = await number({ message: "Insert amount:" });
+  const amount = await number({ message: "Insert amount:", required: true });
 
-  const newTransaction = await apiFetch("/transactions", {
+  const newTransaction = await apiFetch<TransactionResult>("/transactions", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ created_at: date, recipient, amount }),
@@ -59,9 +74,9 @@ async function addTransaction() {
 
 async function updateOne() {
   const id = await selectTransaction();
-  const transaction = await apiFetch(`/transactions/${id}`);
+  const transaction = await apiFetch<Transaction>(`/transactions/${id}`);
 
-  let date = transaction.date;
+  let date = transaction.created_at;
   let recipient = transaction.recipient;
   let amount = transaction.amount;
 
@@ -89,14 +104,17 @@ async function updateOne() {
   });
 
   if (amountConfirm) {
-    amount = await number({ message: "Insert amount:" });
+    amount = await number({ message: "Insert amount:", required: true });
   }
 
-  const updateTransaction = await apiFetch(`/transactions/${id}`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ date, recipient, amount }),
-  });
+  const updateTransaction = await apiFetch<TransactionResult>(
+    `/transactions/${id}`,
+    {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ created_at: date, recipient, amount }),
+    },
+  );
 
   console.log(updateTransaction.message);
   console.table(updateTransaction.transaction);
@@ -111,7 +129,7 @@ async function deleteOne() {
     console.log("Delete transaction cancelled.");
     return;
   }
-  const data = await apiFetch(`/transactions/${id}`, {
+  const data = await apiFetch<TransactionResult>(`/transactions/${id}`, {
     method: "DELETE",
   });
   console.log(data.message);
@@ -128,7 +146,7 @@ async function filterTransactionByDate() {
     validate: validateDate,
   });
 
-  const transactions = await apiFetch(
+  const transactions = await apiFetch<Transaction[]>(
     `/transactions?from=${fromDate}&to=${toDate}`,
   );
 
