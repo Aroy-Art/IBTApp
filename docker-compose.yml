@@ -1,5 +1,5 @@
 ---
-name: iba-db-dev
+name: iba-dev
 
 services:
   db:
